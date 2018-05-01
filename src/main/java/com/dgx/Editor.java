@@ -31,7 +31,7 @@ public class Editor extends JPanel {
 	static List<BufferedImage> img = JPEditArea.getAllImg();
 	
 	Map<Point, BufferedImage> optionsMap = new HashMap<>();
-	BufferedImage selected = img.get(1);
+	BufferedImage selected = img.get(0);
 	
 	private void initMenuBar() {
 		// 菜单栏
