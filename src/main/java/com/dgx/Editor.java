@@ -5,14 +5,15 @@ import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -22,16 +23,23 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
+
+import com.thoughtworks.xstream.XStream;
 
 public class Editor extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
-	static List<BufferedImage> img = JPEditArea.getAllImg();
+	private static List<BufferedImage> img = JPEditArea.getAllImg();
+	private BufferedImage selected = img.get(0);
+	private Set<GameItem> mapSet = new HashSet<>();
+	private Map<BufferedImage, Ele> imgToItem = new HashMap<>();
 	
-	Map<Point, BufferedImage> optionsMap = new HashMap<>();
-	BufferedImage selected = img.get(0);
+	private void initImgToItem() {
+		imgToItem.put(img.get(0), Ele.SKY);
+		imgToItem.put(img.get(1), Ele.GROUND);
+		imgToItem.put(img.get(2), Ele.QUESTION);
+		imgToItem.put(img.get(3), Ele.BRICK);
+	}
 	
 	private void initMenuBar() {
 		// 菜单栏
@@ -39,7 +47,7 @@ public class Editor extends JPanel {
 		// 菜单
 		JMenu menu = new JMenu("操作");
 		// 菜单项
-		JMenuItem menuItem1 = new JMenuItem("新建");
+		JMenuItem menuItem1 = new JMenuItem("新建关卡");
 
 		menu.add(menuItem1);
 		menuBar.add(menu);
@@ -80,21 +88,67 @@ public class Editor extends JPanel {
 		offsetBar.add(jlPage);
 		offsetBar.add(jbRight);
 		offsetBar.add(jbClear);
+		JButton jbCreate = new JButton("create!");
+		offsetBar.add(jbCreate);
 		
 		doClickOffset(0, jbLeft);
 		doClickOffset(1, jbRight);
+		doClickClear(jbClear);
+		doClickCreate(jbCreate);
 		
 		this.add(offsetBar, BorderLayout.SOUTH);
 	}
 	
 	public Editor() {
-//		this.setSize(768, 720);
+		initImgToItem();
 		this.setLayout(new BorderLayout());
 		
 		initMenuBar();
 		initLeftBar();
 		initEditArea();
 		initOffsetBar();
+	}
+	
+	private void doClickCreate(JButton button) {
+		MouseAdapter l = new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				//先不管切换page时改变显示内容的问题，
+				//把maplist的数据写出到XML文件
+				XStream xStream = new XStream();
+				xStream.processAnnotations(GameItem.class);
+				String xmlStr = xStream.toXML(mapSet);
+				System.out.println(xmlStr);
+				try (
+						FileOutputStream fos = new FileOutputStream("./map.xml");
+						OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8");
+				){
+					osw.write(xmlStr);
+					System.out.println("写出完毕！");
+				} catch (Exception e2) {
+					e2.printStackTrace();
+				}
+				
+			}
+		};
+		button.addMouseListener(l);
+	}
+	
+	private void doClickClear(JButton button) {
+		MouseAdapter l = new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				Iterator<GameItem> it = mapSet.iterator();
+				while (it.hasNext()) {
+					GameItem g = it.next();
+					if (g.getWhichPage() == currentPage) {
+						it.remove();
+					}
+				}
+//				System.out.println(mapList);
+			}
+		};
+		button.addMouseListener(l);
 	}
 	
 	private void doClickLabel(JLabel label) {
@@ -118,7 +172,6 @@ public class Editor extends JPanel {
 						jlPage.setText("page: " + currentPage);
 					}
 					break;
-
 				case 1:
 					currentPage++;
 					jlPage.setText("page: " + currentPage);
@@ -135,13 +188,11 @@ public class Editor extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				int x = e.getX() / 48 * 48;
 				int y = e.getY() / 48 * 48 + 23;
-				if (selected == null) {
-					selected = optionsMap.get(new Point(x, y));
-					System.out.println(selected);
-				} else {
-					Graphics g = getGraphics();
-					g.drawImage(selected, x, y, null);
-				}
+				
+				Graphics g = getGraphics();
+				g.drawImage(selected, x, y, null);
+				mapSet.add(new GameItem(currentPage, new Point(x, y-23), imgToItem.get(selected)));
+//				System.out.println(mapList);
 			}
 		};
 		editArea.addMouseListener(l);

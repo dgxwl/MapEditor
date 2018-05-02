@@ -1,6 +1,11 @@
 package com.dgx;
 
 public class Point {
+	@Override
+	public String toString() {
+		return "(" + x + ", " + y + ")";
+	}
+
 	private int x;
 	private int y;
 	
