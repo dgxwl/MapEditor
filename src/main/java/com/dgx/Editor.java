@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -68,8 +69,9 @@ public class Editor extends JPanel {
 		this.add(leftBar, BorderLayout.EAST);
 	}
 	
+	private JPEditArea editArea;
 	private void initEditArea() {
-		JPEditArea editArea = new JPEditArea();
+		editArea = new JPEditArea();
 		doClickEditArea(editArea);
 		
 		this.add(editArea, BorderLayout.CENTER);
@@ -145,6 +147,7 @@ public class Editor extends JPanel {
 						it.remove();
 					}
 				}
+					editArea.repaint();
 //				System.out.println(mapList);
 			}
 		};
@@ -170,11 +173,45 @@ public class Editor extends JPanel {
 					if (currentPage > 0) {
 						currentPage--;
 						jlPage.setText("page: " + currentPage);
+						//切屏重画屏幕
+//						editArea.repaint();
+						Graphics g = editArea.getGraphics();
+						editArea.paint(g);
+						for (GameItem gi : mapSet) {
+							if (gi.getWhichPage() == currentPage) {
+								//怎么根据item(value)逆向拿到img(key)？
+								BufferedImage key = null;
+								for (Entry<BufferedImage, Ele> en : imgToItem.entrySet()) {
+									if (gi.getElement().equals(en.getValue())) {
+										key = en.getKey();
+										break;
+									}
+								}
+								g.drawImage(key, gi.getX(), gi.getY(), null);
+							}
+						}
 					}
 					break;
 				case 1:
 					currentPage++;
 					jlPage.setText("page: " + currentPage);
+					//切屏重画屏幕
+//					editArea.repaint();
+					Graphics g = editArea.getGraphics();
+					editArea.paint(g);
+					for (GameItem gi : mapSet) {
+						if (gi.getWhichPage() == currentPage) {
+							//怎么根据item(value)逆向拿到img(key)？
+							BufferedImage key = null;
+							for (Entry<BufferedImage, Ele> en : imgToItem.entrySet()) {
+								if (gi.getElement().equals(en.getValue())) {
+									key = en.getKey();
+									break;
+								}
+							}
+							g.drawImage(key, gi.getX(), gi.getY(), null);
+						}
+					}
 					break;
 				}
 			}

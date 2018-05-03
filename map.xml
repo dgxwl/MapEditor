@@ -1,29 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<map width="48" height="48" path="./"> 
-  <item> 
-    <x>0</x>  
-    <y>0</y>  
-    <src>sky.png</src> 
-  </item>  
-  <item> 
-    <x>48</x>  
-    <y>0</y>  
-    <src>cloud.png</src> 
-  </item>  
-  <item> 
-    <x>96</x>  
-    <y>0</y>  
-    <src>brick.png</src> 
-  </item>  
-  <item> 
-    <x>144</x>  
-    <y>0</y>  
-    <src>flag.png</src> 
-  </item>  
+<set>
   <item>
-    <x>432</x>
-    <y>468</y>
-    <src>0.png</src>
+    <whichPage>0</whichPage>
+    <point>
+      <x>576</x>
+      <y>336</y>
+    </point>
+    <element>BRICK</element>
   </item>
-</map>
+</set>
