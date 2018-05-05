@@ -4,5 +4,7 @@ public enum Ele {
 	SKY,
 	GROUND,
 	BRICK,
-	QUESTION
+	QUESTION,
+	HARDBRICK,
+	PIPE
 }

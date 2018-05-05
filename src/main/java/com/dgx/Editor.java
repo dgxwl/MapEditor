@@ -2,6 +2,8 @@ package com.dgx;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -23,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import com.thoughtworks.xstream.XStream;
@@ -31,6 +34,7 @@ public class Editor extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private static List<BufferedImage> img = JPEditArea.getAllImg();
+	static Map<BufferedImage, BufferedImage> imgMapping = JPEditArea.getAllImgMapping();
 	private BufferedImage selected = img.get(0);
 	private Set<GameItem> mapSet = new HashSet<>();
 	private Map<BufferedImage, Ele> imgToItem = new HashMap<>();
@@ -40,6 +44,8 @@ public class Editor extends JPanel {
 		imgToItem.put(img.get(1), Ele.GROUND);
 		imgToItem.put(img.get(2), Ele.QUESTION);
 		imgToItem.put(img.get(3), Ele.BRICK);
+		imgToItem.put(img.get(4), Ele.HARDBRICK);
+		imgToItem.put(img.get(5), Ele.PIPE);
 	}
 	
 	private void initMenuBar() {
@@ -49,6 +55,7 @@ public class Editor extends JPanel {
 		JMenu menu = new JMenu("操作");
 		// 菜单项
 		JMenuItem menuItem1 = new JMenuItem("新建关卡");
+		doClickNewMap(menuItem1);
 
 		menu.add(menuItem1);
 		menuBar.add(menu);
@@ -59,9 +66,14 @@ public class Editor extends JPanel {
 		JPLeftBar leftBar = new JPLeftBar();
 		Box box = Box.createVerticalBox();
 		
-		for (int i = 0; i < img.size(); i++) {
+		for (int i = 0; i < 5; i++) {
 			JLabel label = new JLabel(new ImageIcon(img.get(i)));
 			doClickLabel(label);
+			box.add(label);
+		}
+		for (Entry<BufferedImage, BufferedImage> entry : imgMapping.entrySet()) {
+			JLabel label = new JLabel(new ImageIcon(entry.getKey()));
+			doClickThumbLabel(label);
 			box.add(label);
 		}
 		
@@ -107,12 +119,27 @@ public class Editor extends JPanel {
 		
 		initMenuBar();
 		initLeftBar();
-		initEditArea();
 		initOffsetBar();
+		initEditArea();
+	}
+	
+	private int mapNum = 0;
+	private void doClickNewMap(JMenuItem menuItem) {
+		menuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mapSet.clear();
+				mapNum++;
+				Graphics g = editArea.getGraphics();
+				editArea.paint(g);
+			}
+		});
 	}
 	
 	private void doClickCreate(JButton button) {
 		MouseAdapter l = new MouseAdapter() {
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				//先不管切换page时改变显示内容的问题，
@@ -122,11 +149,13 @@ public class Editor extends JPanel {
 				String xmlStr = xStream.toXML(mapSet);
 				System.out.println(xmlStr);
 				try (
-						FileOutputStream fos = new FileOutputStream("./map.xml");
+						FileOutputStream fos = new FileOutputStream("./map"+ mapNum +".xml");
 						OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8");
 				){
 					osw.write(xmlStr);
-					System.out.println("写出完毕！");
+//					System.out.println("写出完毕！");
+					//窗口提示
+					JOptionPane.showMessageDialog(frame, "写出完毕!", "提示", JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
@@ -152,6 +181,16 @@ public class Editor extends JPanel {
 			}
 		};
 		button.addMouseListener(l);
+	}
+	
+	private void doClickThumbLabel(JLabel label) {
+		MouseAdapter l = new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				selected = imgMapping.get((BufferedImage) ((ImageIcon) label.getIcon()).getImage());
+			}
+		};
+		label.addMouseListener(l);
 	}
 	
 	private void doClickLabel(JLabel label) {
@@ -235,8 +274,9 @@ public class Editor extends JPanel {
 		editArea.addMouseListener(l);
 	}
 	
+	private static JFrame frame;
 	public static void main(String[] args) {
-		JFrame frame = new JFrame("地图编辑");
+		frame = new JFrame("地图编辑");
 		frame.setSize(832, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
