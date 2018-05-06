@@ -1,7 +1,11 @@
 package com.dgx;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-
+/**
+ * 描述一个游戏物体在第几页/坐标/是什么物体
+ * @author Administrator
+ *
+ */
 @XStreamAlias("item")
 public class GameItem {
 

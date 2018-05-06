@@ -1,5 +1,10 @@
 package com.dgx;
 
+/**
+ * 物体的坐标类
+ * @author Administrator
+ *
+ */
 public class Point {
 	@Override
 	public String toString() {

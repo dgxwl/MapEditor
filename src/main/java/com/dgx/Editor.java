@@ -34,11 +34,13 @@ public class Editor extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private static List<BufferedImage> img = JPEditArea.getAllImg();
-	static Map<BufferedImage, BufferedImage> imgMapping = JPEditArea.getAllImgMapping();
+	/** 根据预览图key获取大图value */
+	private static Map<BufferedImage, BufferedImage> imgMapping = JPEditArea.getAllImgMapping();
 	private BufferedImage selected = img.get(0);
 	private Set<GameItem> mapSet = new HashSet<>();
 	private Map<BufferedImage, Ele> imgToItem = new HashMap<>();
 	
+	/* 预设物体image */
 	private void initImgToItem() {
 		imgToItem.put(img.get(0), Ele.SKY);
 		imgToItem.put(img.get(1), Ele.GROUND);
@@ -62,26 +64,29 @@ public class Editor extends JPanel {
 		this.add(menuBar, BorderLayout.NORTH);
 	}
 	
-	private void initLeftBar() {
-		JPLeftBar leftBar = new JPLeftBar();
+	private void initRightBar() {
+		//右侧物体栏
+		JPanel rightBar = new JPanel();
+		//盒式布局
 		Box box = Box.createVerticalBox();
-		
+		//存入48*48的物体
 		for (int i = 0; i < 5; i++) {
 			JLabel label = new JLabel(new ImageIcon(img.get(i)));
 			doClickLabel(label);
 			box.add(label);
 		}
+		//大件物体根据mapping将预览图存入
 		for (Entry<BufferedImage, BufferedImage> entry : imgMapping.entrySet()) {
 			JLabel label = new JLabel(new ImageIcon(entry.getKey()));
 			doClickThumbLabel(label);
 			box.add(label);
 		}
 		
-		leftBar.add(box);
-		this.add(leftBar, BorderLayout.EAST);
+		rightBar.add(box);
+		this.add(rightBar, BorderLayout.EAST);
 	}
 	
-	private JPEditArea editArea;
+	private JPEditArea editArea;  //编辑区
 	private void initEditArea() {
 		editArea = new JPEditArea();
 		doClickEditArea(editArea);
@@ -89,7 +94,7 @@ public class Editor extends JPanel {
 		this.add(editArea, BorderLayout.CENTER);
 	}
 	
-	private int currentPage = 0;
+	private int currentPage = 1;
 	private JLabel jlPage;
 	private void initOffsetBar() {
 		JPanel offsetBar = new JPanel();
@@ -118,11 +123,12 @@ public class Editor extends JPanel {
 		this.setLayout(new BorderLayout());
 		
 		initMenuBar();
-		initLeftBar();
+		initRightBar();
 		initOffsetBar();
 		initEditArea();
 	}
 	
+	/* 新建一个地图文件.mapNum:地图文件编号0,1,2.. */
 	private int mapNum = 0;
 	private void doClickNewMap(JMenuItem menuItem) {
 		menuItem.addActionListener(new ActionListener() {
@@ -137,24 +143,23 @@ public class Editor extends JPanel {
 		});
 	}
 	
+	/* 根据当前编辑内容创建地图文件 */
 	private void doClickCreate(JButton button) {
 		MouseAdapter l = new MouseAdapter() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				//先不管切换page时改变显示内容的问题，
 				//把maplist的数据写出到XML文件
 				XStream xStream = new XStream();
 				xStream.processAnnotations(GameItem.class);
 				String xmlStr = xStream.toXML(mapSet);
-				System.out.println(xmlStr);
+				
 				try (
 						FileOutputStream fos = new FileOutputStream("./map"+ mapNum +".xml");
 						OutputStreamWriter osw = new OutputStreamWriter(fos, "utf-8");
 				){
 					osw.write(xmlStr);
-//					System.out.println("写出完毕！");
-					//窗口提示
+					//弹出小窗口提示
 					JOptionPane.showMessageDialog(frame, "写出完毕!", "提示", JOptionPane.INFORMATION_MESSAGE);
 				} catch (Exception e2) {
 					e2.printStackTrace();
@@ -165,6 +170,7 @@ public class Editor extends JPanel {
 		button.addMouseListener(l);
 	}
 	
+	/* 清空编辑区当前页面内容 */
 	private void doClickClear(JButton button) {
 		MouseAdapter l = new MouseAdapter() {
 			@Override
@@ -176,23 +182,13 @@ public class Editor extends JPanel {
 						it.remove();
 					}
 				}
-					editArea.repaint();
-//				System.out.println(mapList);
+				editArea.repaint();
 			}
 		};
 		button.addMouseListener(l);
 	}
 	
-	private void doClickThumbLabel(JLabel label) {
-		MouseAdapter l = new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				selected = imgMapping.get((BufferedImage) ((ImageIcon) label.getIcon()).getImage());
-			}
-		};
-		label.addMouseListener(l);
-	}
-	
+	/* 点击物体栏,选中被点击的图 */
 	private void doClickLabel(JLabel label) {
 		MouseAdapter l = new MouseAdapter() {
 			@Override
@@ -203,59 +199,59 @@ public class Editor extends JPanel {
 		label.addMouseListener(l);
 	}
 	
+	/* 点击物体栏,选中被点击的预览图所对应的大件物体 */
+	private void doClickThumbLabel(JLabel label) {
+		MouseAdapter l = new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				selected = imgMapping.get((BufferedImage) ((ImageIcon) label.getIcon()).getImage());
+			}
+		};
+		label.addMouseListener(l);
+	}
+	
+	/* 切换页面 */
 	private void doClickOffset(int i, JButton button) {
 		MouseAdapter l = new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				switch (i) {
 				case 0:
-					if (currentPage > 0) {
+					if (currentPage > 1) {
 						currentPage--;
 						jlPage.setText("page: " + currentPage);
-						//切屏重画屏幕
-//						editArea.repaint();
-						Graphics g = editArea.getGraphics();
-						editArea.paint(g);
-						for (GameItem gi : mapSet) {
-							if (gi.getWhichPage() == currentPage) {
-								//怎么根据item(value)逆向拿到img(key)？
-								BufferedImage key = null;
-								for (Entry<BufferedImage, Ele> en : imgToItem.entrySet()) {
-									if (gi.getElement().equals(en.getValue())) {
-										key = en.getKey();
-										break;
-									}
-								}
-								g.drawImage(key, gi.getX(), gi.getY(), null);
-							}
-						}
+						//切换页码重画编辑区
+						repaintEditArea();
 					}
 					break;
 				case 1:
 					currentPage++;
 					jlPage.setText("page: " + currentPage);
-					//切屏重画屏幕
-//					editArea.repaint();
-					Graphics g = editArea.getGraphics();
-					editArea.paint(g);
-					for (GameItem gi : mapSet) {
-						if (gi.getWhichPage() == currentPage) {
-							//怎么根据item(value)逆向拿到img(key)？
-							BufferedImage key = null;
-							for (Entry<BufferedImage, Ele> en : imgToItem.entrySet()) {
-								if (gi.getElement().equals(en.getValue())) {
-									key = en.getKey();
-									break;
-								}
-							}
-							g.drawImage(key, gi.getX(), gi.getY(), null);
-						}
-					}
+					//切换页码重画编辑区
+					repaintEditArea();
 					break;
 				}
 			}
 		};
 		button.addMouseListener(l);
+	}
+	/* 切换页码重画编辑区 */
+	private void repaintEditArea() {
+		Graphics g = editArea.getGraphics();
+		editArea.paint(g);
+		for (GameItem gi : mapSet) {
+			if (gi.getWhichPage() == currentPage) {
+				//怎么根据item(value)逆向拿到img(key)？
+				BufferedImage key = null;
+				for (Entry<BufferedImage, Ele> en : imgToItem.entrySet()) {
+					if (gi.getElement().equals(en.getValue())) {
+						key = en.getKey();
+						break;
+					}
+				}
+				g.drawImage(key, gi.getX(), gi.getY(), null);
+			}
+		}
 	}
 	
 	private void doClickEditArea(JPEditArea editArea) {
@@ -268,7 +264,6 @@ public class Editor extends JPanel {
 				Graphics g = getGraphics();
 				g.drawImage(selected, x, y, null);
 				mapSet.add(new GameItem(currentPage, new Point(x, y-23), imgToItem.get(selected)));
-//				System.out.println(mapList);
 			}
 		};
 		editArea.addMouseListener(l);
@@ -277,7 +272,7 @@ public class Editor extends JPanel {
 	private static JFrame frame;
 	public static void main(String[] args) {
 		frame = new JFrame("地图编辑");
-		frame.setSize(832, 800);
+		frame.setSize(768+64, 23+720+57);  //右侧物体栏64,上方菜单栏23,下方操作栏57
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
 		Editor editor = new Editor();

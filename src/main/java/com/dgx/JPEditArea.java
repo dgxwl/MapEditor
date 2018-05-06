@@ -11,7 +11,11 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
-
+/**
+ * 主要编辑区
+ * @author Administrator
+ *
+ */
 public class JPEditArea extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
@@ -45,10 +49,6 @@ public class JPEditArea extends JPanel {
 		img.add(pipe);
 		imgMapping.put(pipeThumb, pipe);
 	}
-	
-//	public static BufferedImage getImg(int index) {
-//		return img.get(index);
-//	}
 
 	public static List<BufferedImage> getAllImg() {
 		return img;
@@ -62,6 +62,9 @@ public class JPEditArea extends JPanel {
 		this.setSize(768, 720);
 	}
 
+	/**
+	 * 先画出天空和地面
+	 */
 	@Override
 	public void paint(Graphics g) {
 		for (int i = 0; i < 768; i+=48) {
@@ -69,7 +72,6 @@ public class JPEditArea extends JPanel {
 				g.drawImage(img.get(0), i, j, null);
 			}
 		}
-
 		for (int i = 0; i < 768; i+=48) {
 			for (int j = 624; j < 720; j+=48) {
 				g.drawImage(img.get(1), i, j, null);
