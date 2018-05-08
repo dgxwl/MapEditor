@@ -24,6 +24,7 @@ public class JPEditArea extends JPanel {
 	private static BufferedImage question = null;
 	private static BufferedImage brick = null;
 	private static BufferedImage hardbrick = null;
+	private static BufferedImage pit = null;
 	private static BufferedImage pipe = null;
 	private static BufferedImage pipeThumb = null;
 	
@@ -36,6 +37,7 @@ public class JPEditArea extends JPanel {
 			question = ImageIO.read(new File("question.png"));
 			brick = ImageIO.read(new File("brick.png"));
 			hardbrick = ImageIO.read(new File("hardbrick.png"));
+			pit = ImageIO.read(new File("pit.png"));
 			pipe = ImageIO.read(new File("pipe.png"));
 			pipeThumb = ImageIO.read(new File("pipe_thumb.png"));
 		} catch (IOException e) {
@@ -46,6 +48,7 @@ public class JPEditArea extends JPanel {
 		img.add(question);
 		img.add(brick);
 		img.add(hardbrick);
+		img.add(pit);
 		img.add(pipe);
 		imgMapping.put(pipeThumb, pipe);
 	}

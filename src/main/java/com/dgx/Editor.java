@@ -47,7 +47,8 @@ public class Editor extends JPanel {
 		imgToItem.put(img.get(2), Ele.QUESTION);
 		imgToItem.put(img.get(3), Ele.BRICK);
 		imgToItem.put(img.get(4), Ele.HARDBRICK);
-		imgToItem.put(img.get(5), Ele.PIPE);
+		imgToItem.put(img.get(5), Ele.PIT);
+		imgToItem.put(img.get(6), Ele.PIPE);
 	}
 	
 	private void initMenuBar() {
@@ -70,7 +71,7 @@ public class Editor extends JPanel {
 		//盒式布局
 		Box box = Box.createVerticalBox();
 		//存入48*48的物体
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 6; i++) {
 			JLabel label = new JLabel(new ImageIcon(img.get(i)));
 			doClickLabel(label);
 			box.add(label);
@@ -263,7 +264,11 @@ public class Editor extends JPanel {
 				
 				Graphics g = getGraphics();
 				g.drawImage(selected, x, y, null);
-				mapSet.add(new GameItem(currentPage, new Point(x, y-23), imgToItem.get(selected)));
+				GameItem gameItem = new GameItem(currentPage, new Point(x, y-23), imgToItem.get(selected));
+				if (mapSet.contains(gameItem)) {
+					mapSet.remove(gameItem);
+					mapSet.add(gameItem);
+				}
 			}
 		};
 		editArea.addMouseListener(l);
