@@ -77,11 +77,16 @@ public class Editor extends JPanel {
 			box.add(label);
 		}
 		//大件物体根据mapping将预览图存入
-		for (Entry<BufferedImage, BufferedImage> entry : imgMapping.entrySet()) {
-			JLabel label = new JLabel(new ImageIcon(entry.getKey()));
+//		for (Entry<BufferedImage, BufferedImage> entry : imgMapping.entrySet()) {
+//			JLabel label = new JLabel(new ImageIcon(entry.getKey()));
+//			doClickThumbLabel(label);
+//			box.add(label);
+//		}
+		imgMapping.forEach((k, v)->{
+			JLabel label = new JLabel(new ImageIcon(k));
 			doClickThumbLabel(label);
 			box.add(label);
-		}
+		});
 		
 		rightBar.add(box);
 		this.add(rightBar, BorderLayout.EAST);
@@ -240,7 +245,20 @@ public class Editor extends JPanel {
 	private void repaintEditArea() {
 		Graphics g = editArea.getGraphics();
 		editArea.paint(g);
-		for (GameItem gi : mapSet) {
+//		for (GameItem gi : mapSet) {
+//			if (gi.getWhichPage() == currentPage) {
+//				//怎么根据item(value)逆向拿到img(key)？
+//				BufferedImage key = null;
+//				for (Entry<BufferedImage, Ele> en : imgToItem.entrySet()) {
+//					if (gi.getElement().equals(en.getValue())) {
+//						key = en.getKey();
+//						break;
+//					}
+//				}
+//				g.drawImage(key, gi.getX(), gi.getY(), null);
+//			}
+//		}
+		mapSet.forEach((gi) -> {
 			if (gi.getWhichPage() == currentPage) {
 				//怎么根据item(value)逆向拿到img(key)？
 				BufferedImage key = null;
@@ -252,7 +270,7 @@ public class Editor extends JPanel {
 				}
 				g.drawImage(key, gi.getX(), gi.getY(), null);
 			}
-		}
+		});
 	}
 	
 	private void doClickEditArea(JPEditArea editArea) {
