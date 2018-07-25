@@ -268,6 +268,8 @@ public class Editor extends JPanel {
 				if (mapSet.contains(gameItem)) {
 					mapSet.remove(gameItem);
 					mapSet.add(gameItem);
+				} else {
+					mapSet.add(gameItem);
 				}
 			}
 		};
